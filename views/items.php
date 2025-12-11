@@ -42,7 +42,7 @@
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-box-open mr-2"></i> Item List</span>
-            <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addItemModal">
+            <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addItemModal" onclick="clearSupplierForm()">
                 <i class="fas fa-plus"></i> Add Item
             </button>
         </div>
@@ -90,7 +90,7 @@
 
             <div class="modal-body">
                 <form id="addItemForm">
-
+                    <input type="hidden" id="supplierId">
                     <div class="form-group">
                         <label>Item Code</label>
                         <input type="text" class="form-control" required id ="itemCode">

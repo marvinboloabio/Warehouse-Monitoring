@@ -3,11 +3,11 @@ let suppliers = []; // Declare a global suppliers array to hold the data
 $(document).ready(function () {
     fetchSuppliers();
 
-    $('#searchItem').on('keyup', function () {
+    $('#searchTruck').on('keyup', function () {
         const searchValue = $(this).val().toLowerCase();
         const filteredSuppliers = suppliers.filter(supplier =>
-            supplier.item_code.toLowerCase().includes(searchValue) ||
-            supplier.item_description.toLowerCase().includes(searchValue)
+            supplier.plate_no.toLowerCase().includes(searchValue) ||
+            supplier.trucking_service.toLowerCase().includes(searchValue)
         );
         renderSuppliers(filteredSuppliers);
     });
@@ -15,13 +15,13 @@ $(document).ready(function () {
 
 function clearSupplierForm() {
     $('#supplierId').val('');
-    $('#itemCode').val('');
-    $('#itemDesc').val('');
+    $('#plateNo').val('');
+    $('#truckingService').val('');
 }
 
 function fetchSuppliers() {
     $.ajax({
-        url: '../api/item.php',
+        url: '../api/trucking.php',
         method: 'GET',
         success: function (data) {
 
@@ -49,17 +49,17 @@ function fetchSuppliers() {
 }
 
 function renderSuppliers(suppliers) {
-    const supplierTableBody = $('#itemsTable');
+    const supplierTableBody = $('#truckingTable');
     supplierTableBody.empty(); // Clear the table body
 
     suppliers.forEach((supplier) => {
         const row = `
              <tr>
-                 <td>${supplier.item_id}</td>
-                 <td>${supplier.item_code}</td>
-                 <td>${supplier.item_description}</td>
+                 <td>${supplier.trucking_id}</td>
+                 <td>${supplier.plate_no}</td>
+                 <td>${supplier.trucking_service}</td>
                  <td>
-                     <button class="btn btn-primary btn-sm" onclick="editSupplier(${supplier.item_id})">Edit</button>
+                     <button class="btn btn-primary btn-sm" onclick="editSupplier(${supplier.trucking_id})">Edit</button>
                  </td>
              </tr>
          `;
@@ -69,11 +69,11 @@ function renderSuppliers(suppliers) {
 
 function saveSupplier() {
     const supplierData = {
-        name: $('#itemCode').val(),
-        description: $('#itemDesc').val(),
+        name: $('#plateNo').val(),
+        description: $('#truckingService').val(),
 
     };
-
+    
     if (!supplierData.name || !supplierData.description) {
         alert('Please fill all fields');
         return;
@@ -90,13 +90,13 @@ function saveSupplier() {
 
 function createSupplier(supplierData) {
     $.ajax({
-        url: '../api/item.php',
+        url: '../api/trucking.php',
         method: 'POST',
         data: JSON.stringify(supplierData),
         contentType: 'application/json',
         success: function (response) {
             console.log("Supplier created successfully:", response.data);
-            $('#supplierModal').modal('hide');
+            $('#addTruckingModal').modal('hide');
 
             fetchSuppliers();
             alert("Brand created successfully:");
@@ -113,12 +113,12 @@ function createSupplier(supplierData) {
 
 function updateSupplier(supplierData) {
     $.ajax({
-        url: '../api/item.php',
+        url: '../api/trucking.php',
         method: 'PUT',
         data: JSON.stringify(supplierData),
         contentType: 'application/json',
         success: function () {
-            $('#addItemModal').modal('hide');
+            $('#addTruckingModal').modal('hide');
             fetchSuppliers();
             alert("Item updated successfully:");
         },
@@ -130,10 +130,10 @@ function updateSupplier(supplierData) {
 
 function editSupplier(id) {
     console.log(id);
-    const supplier = suppliers.find(supplier => supplier.item_id == id);
-    $('#supplierId').val(supplier.item_id);
-    $('#itemCode').val(supplier.item_code);
-    $('#itemDesc').val(supplier.item_description);
+    const supplier = suppliers.find(supplier => supplier.trucking_id == id);
+    $('#supplierId').val(supplier.trucking_id);
+    $('#plateNo').val(supplier.plate_no);
+    $('#truckingService').val(supplier.trucking_service);
     //$('#supplierModalLabel').text('Edit Supplier');
-    $('#addItemModal').modal('show');
+    $('#addTruckingModal').modal('show');
 }
