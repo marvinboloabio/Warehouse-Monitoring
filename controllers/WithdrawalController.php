@@ -1,24 +1,26 @@
 <?php
-require_once __DIR__ . '/../models/Trucking.php';
+require_once __DIR__ . '/../models/Withdrawal.php';
 
-class TruckingController
+class WithdrawalController
 {
     private $supplier;
 
     public function __construct()
     {
         $db = (new Database())->connect();
-        $this->supplier = new Trucking($db);
+        $this->supplier = new Withdrawal($db);
     }
 
     public function getSuppliers()
     {
         echo json_encode($this->supplier->getSuppliers());
+
     }
 
     public function getActiveSuppliers()
     {
         echo json_encode($this->supplier->getActiveSuppliers());
+
     }
 
     public function createSupplier($data)
@@ -34,11 +36,6 @@ class TruckingController
             error_log("Error in createSupplier: " . $e->getMessage());
             return false;
         }
-    }
-
-    public function getTruckingServiceByPlate($plateNo)
-    {
-        return $this->supplier->getTruckingServiceByPlate($plateNo);
     }
 
     public function updateSupplier($data)

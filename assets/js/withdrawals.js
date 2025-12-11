@@ -1,13 +1,12 @@
-let deliveries = []; // Declare a global suppliers array to hold the data
+let withdrawals = []; // Declare a global suppliers array to hold the data
 
 $(document).ready(function () {
     fetchItems();
-    fetchDeliveries();
-    fetchPlateNo();
+    fetchWithdrawals();
 
-    $('#searchDeliveries').on('keyup', function () {
+    $('#searchWithdrawals').on('keyup', function () {
         const searchValue = $(this).val().toLowerCase();
-        const filteredSuppliers = deliveries.filter(delivery =>
+        const filteredSuppliers = withdrawals.filter(delivery =>
             delivery.item_name.toLowerCase().includes(searchValue) ||
             delivery.date_receive.toLowerCase().includes(searchValue) ||
             delivery.transaction_type.toLowerCase().includes(searchValue)
@@ -15,57 +14,26 @@ $(document).ready(function () {
         renderSuppliers(filteredSuppliers);
     });
 
-    $('#plateNo').on('change', function () {
-        var plateNo = $(this).val();
+    $('#ds , #ns ').on('input', calculate);
 
-        if (plateNo) {
-            $.ajax({
-                url: '../api/trucking.php',
-                type: 'GET',
-                data: { plate_no: plateNo },
-                dataType: 'json',
-                success: function (data) {
-                    $('#truckingService').val(data.trucking_service || '');
-                },
-                error: function (err) {
-                    console.error('Error fetching trucking service:', err);
-                    $('#truckingService').val('');
-                }
-            });
-        } else {
-            $('#truckingService').val('');
-        }
-    });
-
-    $('#weightScale , #fiveTonner ').on('input', calculate);
-
-    $('#weightScale , #dynamicsQty ').on('input', calculateTruckScaleVsDynamics);
 });
 
 function clearForm() {
     $('#supplierId').val('');
-    $('#addReceivingForm')[0].reset();
-    $('#dateReceive').val(new Date().toISOString().split('T')[0]); // Default to today's date
+    $('#addWithdrawalForm')[0].reset();
+    $('#dateWithdrawal').val(new Date().toISOString().split('T')[0]); // Default to today's date
 }
 
 function calculate() {
-    const value1 = parseFloat($('#weightScale').val()) || 0;
-    const value2 = parseFloat($('#fiveTonner').val()) || 0;
-    const difference = value1 - value2;
-    $('#tonnerTruck').val(difference);
+    const value1 = parseFloat($('#ds').val()) || 0;
+    const value2 = parseFloat($('#ns').val()) || 0;
+    const difference = value1 + value2;
+    $('#totalQty').val(difference);
 }
 
-
-function calculateTruckScaleVsDynamics() {
-    const value1 = parseFloat($('#weightScale').val()) || 0;
-    const value2 = parseFloat($('#dynamicsQty').val()) || 0;
-    const difference = value1 - value2;
-    $('#truckScaleVsDynamics').val(difference);
-}
-
-function fetchDeliveries() {
+function fetchWithdrawals() {
     $.ajax({
-        url: '../api/deliveries.php',
+        url: '../api/withdrawal.php',
         method: 'GET',
         success: function (data) {
 
@@ -78,7 +46,7 @@ function fetchDeliveries() {
                     return;
                 }
             }
-            deliveries = suppliersData;  // Store the fetched suppliers in the global array
+            withdrawals = suppliersData;  // Store the fetched suppliers in the global array
             renderSuppliers(suppliersData);
 
         },
@@ -93,36 +61,23 @@ function fetchDeliveries() {
 }
 
 
-function renderSuppliers(deliveries) {
-    const supplierTableBody = $('#deliveriesTable');
+function renderSuppliers(withdrawals) {
+    const supplierTableBody = $('#withdrawalTable');
     supplierTableBody.empty(); // Clear the table body
 
-    deliveries.forEach((delivery) => {
+    withdrawals.forEach((withdrawal) => {
         const row = `
 <tr>
-    <td>${delivery.delivery_id}</td>
-    <td>${delivery.item_code}</td>
-    <td>${delivery.item_name}</td>
-    <td>${delivery.date_receive}</td>
-    <td>${delivery.transaction_type}</td>
-    <td>${delivery.weight_scale}</td>
-    <td>${delivery.dynamics_qty}</td>
-    <td>${delivery.truckscale_vs_dynamics}</td>
-    <td>${delivery.five_tonner}</td>
-    <td>${delivery.num_bag}</td>
-    <td>${delivery.tonner_vs_truck}</td>
-    <td>${delivery.tord_no}</td>
-    <td>${delivery.atw_no}</td>
-    <td>${delivery.pallet_qty}</td>
-    <td>${delivery.supplier}</td>
-    <td>${delivery.plate_no}</td>
-    <td>${delivery.weigh_slip}</td>
-    <td>${delivery.status}</td>
-    <td>${delivery.trucking_service}</td>
-    <td>${delivery.remarks}</td>
-
+    <td>${withdrawal.withdrawal_id}</td>
+    <td>${withdrawal.item_code}</td>
+    <td>${withdrawal.date_withdrawal}</td>
+    <td>${withdrawal.item_name}</td>
+    <td>${withdrawal.ds}</td>
+    <td>${withdrawal.ns}</td>
+    <td>${withdrawal.total_qty}</td>
+    <td>${withdrawal.remarks}</td>
     <td>
-        <button class="btn btn-primary btn-sm" onclick="editDelivery(${delivery.delivery_id})">
+        <button class="btn btn-primary btn-sm" onclick="editDelivery(${withdrawal.withdrawal_id})">
             Edit
         </button>
     </td>
@@ -154,51 +109,17 @@ function fetchItems() {
     });
 }
 
-function fetchPlateNo() {
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            url: '../api/trucking.php',
-            method: 'GET',
-            success: function (data) {
-                const suppliers = typeof data === 'string' ? JSON.parse(data) : data;
-                const supplierDropdown = $('#plateNo');
-                supplierDropdown.empty();
-                suppliers.forEach(supplier => {
-                    supplierDropdown.append(`<option value="${supplier.plate_no}">${supplier.plate_no}</option>`);
-                });
-                resolve(); // Resolve the Promise once data is populated
-            },
-            error: function (xhr, status, error) {
-                console.error('Error fetching suppliers:', error);
-                reject(error); // Reject the Promise in case of an error
-            }
-        });
-    });
-}
-
-function saveDeliveries() {
+function saveWithdrawal() {
     const supplierData = {
+        date_withdrawal: $('#dateWithdrawal').val(),
         item_description: $('#itemDesc').val(),
-        date_receive: $('#dateReceive').val(),
-        transaction_type: $('#transactionType').val(),
-        weight_scale: $('#weightScale').val(),
-        dynamics_qty: $('#dynamicsQty').val(),
-        truckscale_vs_dynamics: $('#truckScaleVsDynamics').val(),
-        five_tonner: $('#fiveTonner').val(),
-        num_bag: $('#numBag').val(),
-        tonner_vs_truck: $('#tonnerTruck').val(),
-        tord_no: $('#tordNo').val(),
-        atw_no: $('#atwNo').val(),
-        pallet_qty: $('#palletQty').val(),
-        supplier: $('#supplier').val(),
-        plate_no: $('#plateNo').val(),
-        weigh_slip: $('#weighSlip').val(),
-        status: $('#status').val(),
-        trucking_service: $('#truckingService').val(),
+        ds: $('#ds').val(),
+        ns: $('#ns').val(),
+        total_qty: $('#totalQty').val(),
         remarks: $('#remarks').val(),
     };
 
-    if (!supplierData.item_description || !supplierData.date_receive) {
+    if (!supplierData.date_withdrawal || !supplierData.item_description) {
         alert('Please fill all fields');
         return;
     }
@@ -214,16 +135,16 @@ function saveDeliveries() {
 
 function createSupplier(supplierData) {
     $.ajax({
-        url: '../api/deliveries.php',
+        url: '../api/withdrawal.php',
         method: 'POST',
         data: JSON.stringify(supplierData),
         contentType: 'application/json',
         success: function (response) {
             console.log("Supplier created successfully:", response.data);
-            $('#addReceivingModal').modal('hide');
+            $('#addWithdrawalModal').modal('hide');
 
-            fetchSuppliers();
-            alert("Brand created successfully:");
+            fetchWithdrawals();
+            alert("Withrawal created successfully:");
         },
         error: function (xhr, status, error) {
             console.error('Error creating supplier:', error);
@@ -237,14 +158,14 @@ function createSupplier(supplierData) {
 
 function updateSupplier(supplierData) {
     $.ajax({
-        url: '../api/deliveries.php',
+        url: '../api/withdrawal.php',
         method: 'PUT',
         data: JSON.stringify(supplierData),
         contentType: 'application/json',
         success: function () {
-            $('#addReceivingModal').modal('hide');
-            fetchDeliveries();
-            alert("Item updated successfully:");
+            $('#addWithdrawalModal').modal('hide');
+            fetchWithdrawals();
+            alert("Withdrawal updated successfully:");
         },
         error: function (xhr, status, error) {
             console.error('Error updating supplier:', error);

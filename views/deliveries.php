@@ -67,6 +67,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>ID</th>
+                                <th>Item Code</th>
                                 <th>Item Description</th>
                                 <th>Date Receive</th>
                                 <th>Transaction Type</th>
@@ -118,75 +119,77 @@
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Date Receive</label>
-                                <input type="date" class="form-control" required id = "dateReceive">
+                                <input type="date" class="form-control" required id="dateReceive">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Transaction Type</label>
-                                <select class="form-control" id = "transactionType">
+                                <select class="form-control" id="transactionType">
                                     <option>Deliveries</option>
                                     <option>Transfer-in</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Weight Scale</label>
-                                <input type="number" step="0.01" class="form-control" id = "weightScale">
+                                <input type="number" step="0.01" class="form-control" id="weightScale">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group col-md-3">
                                 <label>Dynamics Qty</label>
-                                <input type="number" step="0.01" class="form-control" id = "dynamicsQty">
+                                <input type="number" step="0.01" class="form-control" id="dynamicsQty">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Truck Scale vs Dynamics</label>
-                                <input type="number" step="0.01" class="form-control" readonly id = "truckScaleVsDynamics">
+                                <input type="number" step="0.01" class="form-control" readonly id="truckScaleVsDynamics">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Five Tonner</label>
-                                <input type="number" step="0.01" class="form-control" id = "fiveTonner">
+                                <input type="number" step="0.01" class="form-control" id="fiveTonner">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Num Bag</label>
-                                <input type="number" class="form-control" id = "numBag">
+                                <input type="number" class="form-control" id="numBag">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group col-md-3">
                                 <label>Tonner vs Truck</label>
-                                <input type="number" step="0.01" class="form-control" readonly id = "tonnerTruck">
+                                <input type="number" step="0.01" class="form-control" readonly id="tonnerTruck">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>TORD No.</label>
-                                <input type="text" class="form-control" id = "tordNo">
+                                <input type="text" class="form-control" id="tordNo">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>ATW No.</label>
-                                <input type="text" class="form-control" id = "atwNo">
+                                <input type="text" class="form-control" id="atwNo">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Pallet Qty</label>
-                                <input type="number" class="form-control" id = "palletQty">
+                                <input type="number" class="form-control" id="palletQty">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group col-md-3">
                                 <label>Supplier</label>
-                                <input type="text" class="form-control" id = "supplier">
+                                <input type="text" class="form-control" id="supplier">
                             </div>
                             <div class="form-group col-md-3">
-                                <label>Plate No</label>
-                                <input type="text" class="form-control" id = "plateNo">
+                                <label for="plateNo">Plate No</label>
+                                <select id="plateNo" class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Weigh Slip</label>
-                                <input type="text" class="form-control" id = "weighSlip">
+                                <input type="text" class="form-control" id="weighSlip">
                             </div>
                             <div class="form-group col-md-3">
                                 <label>Status</label>
-                                <select class="form-control" id = "status">
+                                <select class="form-control" id="status">
                                     <option>Pending</option>
                                     <option>Transacted</option>
                                 </select>
@@ -195,12 +198,12 @@
 
                         <div class="form-group">
                             <label>Trucking Service</label>
-                            <input type="text" class="form-control" readonly id = "truckingService">
+                            <input type="text" class="form-control" readonly id="truckingService">
                         </div>
 
                         <div class="form-group">
                             <label>Remarks</label>
-                            <textarea class="form-control" id = "remarks" rows="2"></textarea>
+                            <textarea class="form-control" id="remarks" rows="2"></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block" onclick="saveDeliveries()">
