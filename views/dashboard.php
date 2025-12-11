@@ -119,7 +119,7 @@
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo-placeholder">
-            <img src="images/Archer_Daniels_Midland_logo.png" class="logo-img">
+            <img src="../images/Archer_Daniels_Midland_logo.png" class="logo-img">
         </div>
 
         <a href="dashboard.php"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>

@@ -68,26 +68,7 @@
                         </tr>
                     </thead>
                     <tbody id="itemsTable">
-                        <!-- AJAX Loaded Items Here -->
-                        <tr>
-                            <td>01</td>
-                            <td>RM12020</td>
-                            <td>SOY BEAN</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
 
-                        <tr>
-                            <td>02</td>
-                            <td>RM20202</td>
-                            <td>CORN BRAN</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -112,15 +93,15 @@
 
                     <div class="form-group">
                         <label>Item Code</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" class="form-control" required id ="itemCode">
                     </div>
 
                     <div class="form-group">
                         <label>Item Description</label>
-                        <input type="text" class="form-control" required>
+                        <input type="text" class="form-control" required id ="itemDesc">
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block">
+                    <button type="submit" onclick="saveSupplier()" class="btn btn-primary btn-block">
                         Save Item
                     </button>
 
@@ -177,6 +158,7 @@
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="../assets/js/items.js"></script>
 
 </body>
 </html>
