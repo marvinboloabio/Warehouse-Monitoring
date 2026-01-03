@@ -68,26 +68,14 @@ public function createSupplier($data)
     public function updateSupplier($data)
     {
         $query = "UPDATE " . $this->table . " SET
+        date_withdrawal = :date_withdrawal,
         item_description = :item_description,
-        date_receive = :date_receive,
-        transaction_type = :transaction_type,
-        weight_scale = :weight_scale,
-        dynamics_qty = :dynamics_qty,
-        truckscale_vs_dynamics = :truckscale_vs_dynamics,
-        five_tonner = :five_tonner,
-        num_bag = :num_bag,
-        tonner_vs_truck = :tonner_vs_truck,
-        tord_no = :tord_no,
-        atw_no = :atw_no,
-        pallet_qty = :pallet_qty,
-        supplier = :supplier,
-        plate_no = :plate_no,
-        weigh_slip = :weigh_slip,
-        status = :status,
-        trucking_service = :trucking_service,
+        ds = :ds,
+        ns = :ns,
+        total_qty = :total_qty,
         remarks = :remarks,
         updated_at = CURRENT_TIMESTAMP
-    WHERE delivery_id = :id";
+    WHERE withdrawal_id = :id";
 
         $stmt = $this->conn->prepare($query);
         return $stmt->execute($data);

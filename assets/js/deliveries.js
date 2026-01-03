@@ -5,15 +5,10 @@ $(document).ready(function () {
     fetchDeliveries();
     fetchPlateNo();
 
-    $('#searchDeliveries').on('keyup', function () {
-        const searchValue = $(this).val().toLowerCase();
-        const filteredSuppliers = deliveries.filter(delivery =>
-            delivery.item_name.toLowerCase().includes(searchValue) ||
-            delivery.date_receive.toLowerCase().includes(searchValue) ||
-            delivery.transaction_type.toLowerCase().includes(searchValue)
-        );
-        renderSuppliers(filteredSuppliers);
+    $('#searchDeliveries, #dateFrom, #dateTo').on('input change', function () {
+        applyFilters();
     });
+
 
     $('#plateNo').on('change', function () {
         var plateNo = $(this).val();
@@ -41,6 +36,31 @@ $(document).ready(function () {
 
     $('#weightScale , #dynamicsQty ').on('input', calculateTruckScaleVsDynamics);
 });
+
+function applyFilters() {
+    const searchValue = $('#searchDeliveries').val().toLowerCase();
+    const dateFrom = $('#dateFrom').val();
+    const dateTo = $('#dateTo').val();
+
+    const filteredWithdrawals = deliveries.filter(delivery => {
+        // TEXT SEARCH
+        const matchesText =
+            delivery.item_name.toLowerCase().includes(searchValue) ||
+            delivery.date_receive.toLowerCase().includes(searchValue);
+
+        // DATE FILTERING  
+        let matchesDate = true;
+        const rowDate = new Date(delivery.date_receive);
+
+        if (dateFrom && rowDate < new Date(dateFrom)) matchesDate = false;
+        if (dateTo && rowDate > new Date(dateTo)) matchesDate = false;
+
+        // MUST MATCH BOTH
+        return matchesText && matchesDate;
+    });
+
+    renderSuppliers(filteredWithdrawals);
+}
 
 function clearForm() {
     $('#supplierId').val('');
@@ -277,3 +297,98 @@ function editDelivery(id) {
     //$('#supplierModalLabel').text('Edit Supplier');
     $('#addReceivingModal').modal('show');
 }
+
+function exportExcel() {
+    const table = document.querySelector("table");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(table);
+
+    // Get table range
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    // Apply header styles: background color, bold, wrap text
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cell_address = XLSX.utils.encode_cell({ r: 0, c: C }); // first row = header
+        if (!ws[cell_address]) continue;
+        ws[cell_address].s = {
+            fill: { fgColor: { rgb: "1D3557" } }, // dark blue background
+            font: { color: { rgb: "FFFFFF" }, bold: true }, // white bold text
+            alignment: { horizontal: "center", vertical: "center", wrapText: true } // wrap text
+        };
+    }
+
+    // Auto-fit column widths based on data length
+    const colWidths = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        let maxLength = 10;
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+            const cell = ws[cell_address];
+            if (cell && cell.v) {
+                const cellLength = cell.v.toString().length;
+                if (cellLength > maxLength) maxLength = cellLength;
+            }
+        }
+        colWidths.push({ wch: maxLength + 2 });
+    }
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, "Receiving");
+    XLSX.writeFile(wb, "receiving_list.xlsx");
+}
+
+
+async function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    doc.setFontSize(14);
+    doc.text("Deliveries/Transfer-in", 14, 10);
+
+    const rows = [];
+    $("#deliveriesTable tr").each(function () {
+        const row = [];
+        $(this).find("td").each(function (index) {
+
+            // keep columns 1–17 (excluding ID, trucking, remarks)
+            if (index > 0 && index <= 17) {
+                row.push($(this).text().trim());
+            }
+        });
+
+        if (row.length > 0) rows.push(row);
+    });
+
+    const headers = [
+        "Item Code", "Item Desc", "Date", "Type",
+        "Weight", "Dynamics", "Diff", "Tonner", "Bags",
+        "Ton vs Truck", "TORD", "ATW", "Pallet",
+        "Supplier", "Plate", "Slip", "Status"
+    ];
+
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 15,
+        theme: 'grid',
+        tableWidth: 'auto',
+        styles: {
+            fontSize: 8,
+            cellPadding: 1,
+            cellWidth: 'auto',
+            overflow: 'linebreak'
+        },
+        headStyles: {
+            fillColor: [29, 53, 87],
+            textColor: 255,
+            halign: "center"
+        },
+        bodyStyles: {
+            textColor: [0, 0, 0] // make table data black
+        }
+    });
+
+    doc.save("receiving_list.pdf");
+}
+
+

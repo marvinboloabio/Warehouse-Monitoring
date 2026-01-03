@@ -6,14 +6,12 @@ $conn = $db->connect();
 
 // Create Withdrawals Table
 $sql = "
-CREATE TABLE IF NOT EXISTS withdrawals (
-    withdrawal_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    
-    date_withdrawal DATE NOT NULL,
+CREATE TABLE IF NOT EXISTS warehouse_monitor (
+    warehouse_id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_description INTEGER NOT NULL,        -- FK to items.item_id
-    ds REAL NOT NULL,
-    ns REAL NOT NULL,
-    total_qty REAL NOT NULL,
+    beg_bal REAL NOT NULL,
+    total_deliveries REAL NOT NULL,
+    total_withdrawals REAL NOT NULL,
     remarks TEXT,
     
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -24,5 +22,5 @@ CREATE TABLE IF NOT EXISTS withdrawals (
 ";
 
 $conn->exec($sql);
-echo "Withdrawals table created successfully!\n";
+echo "Warehouse table created successfully!\n";
 ?>

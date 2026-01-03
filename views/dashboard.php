@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
 
     <style>
         body {
@@ -112,6 +112,7 @@
             opacity: 0.6;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -123,24 +124,13 @@
         </div>
 
         <a href="dashboard.php"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
-
-    <a href="beginning.php"><i class="fas fa-boxes mr-2"></i> Beginning Inventory</a>
-
-    <a href="trucking.php"><i class="fas fa-truck-moving mr-2"></i> Trucking Services</a>
-
-    <a href="items.php"><i class="fas fa-box-open mr-2"></i> Items</a>
-
-    <a href="deliveries.php"><i class="fas fa-arrow-circle-down mr-2"></i> Deliveries</a>
-
-    <a href="withdrawals.php"><i class="fas fa-arrow-circle-up mr-2"></i> Withdrawals</a>
-
-    <a href="doh.php"><i class="fas fa-calendar-alt mr-2"></i> Days On Hand</a>
-
-    <a href="reports"><i class="fas fa-chart-bar mr-2"></i>Reports</a>
-
-    <a href="stockCard.php"><i class="fas fa-clipboard-list mr-2"></i> Stock Card</a>
-
-    <a href="login.php" class="text-danger"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
+        <a href="trucking.php"><i class="fas fa-truck-moving mr-2"></i> Trucking Services</a>
+        <a href="items.php"><i class="fas fa-box-open mr-2"></i> Items</a>
+        <a href="deliveries.php"><i class="fas fa-arrow-circle-down mr-2"></i> Deliveries</a>
+        <a href="withdrawals.php"><i class="fas fa-arrow-circle-up mr-2"></i> Withdrawals</a>
+        <a href="warehouse.php"><i class="fas fa-clipboard-list mr-2"></i>Warehouse Monitoring</a>
+        <a href="reports.php"><i class="fas fa-chart-bar mr-2"></i> Reports</a>
+        <a href="login.php" class="text-danger"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
     </div>
 
     <!-- CONTENT -->
@@ -151,53 +141,175 @@
             <span><i class="fas fa-user"></i> Admin</span>
         </div>
 
-        <!-- CARDS -->
+        <!-- DASHBOARD CARDS -->
         <div class="row">
 
             <div class="col-md-3 mb-4">
-                <div class="card-custom bg-primary shadow">
+                <div class="card-custom bg-primary shadow" data-card="total_items">
                     <i class="fas fa-box float-right"></i>
-                    <h4>1,245</h4>
+                    <h4>0</h4>
                     <p>Total Items</p>
                 </div>
             </div>
 
             <div class="col-md-3 mb-4">
-                <div class="card-custom bg-danger shadow">
-                    <i class="fas fa-exclamation-triangle float-right"></i>
-                    <h4>12</h4>
-                    <p>Low Stock Items</p>
+                <div class="card-custom bg-danger shadow" data-card="total_deliveries">
+                    <i class="fas fa-truck float-right"></i>
+                    <h4>0</h4>
+                    <p>Total Deliveries</p>
                 </div>
             </div>
 
             <div class="col-md-3 mb-4">
-                <div class="card-custom bg-success shadow">
+                <div class="card-custom bg-success shadow" data-card="total_withdrawals">
                     <i class="fas fa-arrow-down float-right"></i>
-                    <h4>89</h4>
-                    <p>Recieved Today</p>
+                    <h4>0</h4>
+                    <p>Total Withdrawals</p>
                 </div>
             </div>
 
             <div class="col-md-3 mb-4">
-                <div class="card-custom bg-warning shadow text-dark">
-                    <i class="fas fa-arrow-up float-right"></i>
-                    <h4>54</h4>
-                    <p>Withdrawals Today</p>
+                <div class="card-custom bg-warning shadow text-dark" data-card="current_stock">
+                    <i class="fas fa-warehouse float-right"></i>
+                    <h4>0</h4>
+                    <p>Current Stock</p>
                 </div>
             </div>
+
         </div>
 
-        <!-- SPACE FOR CHARTS OR TABLES -->
+        <!-- CHARTS -->
+        <div class="row">
+
+            <!-- Bar Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold">Monthly Deliveries</div>
+                    <div class="card-body">
+                        <canvas id="deliveriesChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold">Monthly Withdrawals</div>
+                    <div class="card-body">
+                        <canvas id="withdrawalsChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RECENT TRANSACTIONS -->
         <div class="card shadow-sm mt-4">
             <div class="card-header bg-white font-weight-bold">
                 Recent Transactions
             </div>
             <div class="card-body">
-                <p class="text-muted">You can place your stock-in/out table, logs, or charts here.</p>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered" id="recentTransactionsTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Type</th>
+                                <th>Quantity (kg)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- AJAX-loaded transactions will appear here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </div>
+
+    <!-- CHART JS -->
+    <script>
+        const recentTransactionsTable = document.querySelector('#recentTransactionsTable tbody');
+        fetch('../api/recent_transactions.php')
+            .then(res => res.json())
+            .then(data => {
+                recentTransactionsTable.innerHTML = '';
+                data.forEach(tx => {
+                    const row = `
+                <tr>
+                    <td>${tx.date}</td>
+                    <td>${tx.item_name}</td>
+                    <td>${tx.type}</td>
+                    <td>${tx.quantity}</td>
+                    <td>${tx.remarks || ''}</td>
+                </tr>
+            `;
+                    recentTransactionsTable.innerHTML += row;
+                });
+            })
+            .catch(err => console.error('Recent Transactions API error:', err));
+        fetch('../api/warehouse_charts.php')
+            .then(res => res.json())
+            .then(data => {
+
+                /* DELIVERIES - BAR CHART */
+                new Chart(document.getElementById('deliveriesChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Deliveries (kg)',
+                            data: data.deliveries,
+                            backgroundColor: '#1d3557'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                /* WITHDRAWALS - LINE CHART */
+                new Chart(document.getElementById('withdrawalsChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Withdrawals (kg)',
+                            data: data.withdrawals,
+                            borderColor: '#e76f51',
+                            backgroundColor: 'rgba(231, 111, 81, 0.2)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+
+            })
+            .catch(err => console.error('Chart API error:', err));
+
+        fetch('../api/dashboard_summary.php')
+            .then(res => res.json())
+            .then(data => {
+                document.querySelectorAll('.card-custom').forEach(card => {
+                    const key = card.dataset.card;
+                    if (data[key] !== undefined) {
+                        card.querySelector('h4').textContent = data[key];
+                    }
+                });
+            })
+            .catch(err => console.error('Dashboard summary API error:', err));
+    </script>
 
 </body>
 

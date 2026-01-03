@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Receiving - Warehouse Monitoring System</title>
+    <title>Deliveries - Warehouse Monitoring System</title>
 
     <link rel="stylesheet"
         href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -47,18 +47,40 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-truck-loading mr-2"></i> Receiving List</span>
-                <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addReceivingModal" onclick="clearForm()">
-                    <i class="fas fa-plus"></i> Add Receiving
-                </button>
+
+                <div>
+                    <button class="btn btn-success btn-sm mr-2" onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+
+                    <button class="btn btn-danger btn-sm mr-2" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+
+                    <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addReceivingModal" onclick="clearForm()">
+                        <i class="fas fa-plus"></i> Add Receiving
+                    </button>
+                </div>
             </div>
 
             <div class="card-body">
-
-                <!-- Search Bar -->
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <input type="text" id="searchDeliveries" class="form-control" placeholder="Search receiving...">
+
+                    <div class="col-md-3">
+                        <label>Date From</label>
+                        <input type="date" id="dateFrom" class="form-control">
                     </div>
+
+                    <div class="col-md-3">
+                        <label>Date To</label>
+                        <input type="date" id="dateTo" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Search Withdrawal</label>
+                        <input type="text" id="searchDeliveries" class="form-control" placeholder="Search Deliveries...">
+                    </div>
+
                 </div>
 
                 <!-- RECEIVING TABLE -->
@@ -219,6 +241,14 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- XLSX / SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+    <!-- jsPDF AutoTable -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
     <script src="../assets/js/deliveries.js"></script>
 </body>
 

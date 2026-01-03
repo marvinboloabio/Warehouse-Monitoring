@@ -4,19 +4,38 @@ $(document).ready(function () {
     fetchItems();
     fetchWithdrawals();
 
-    $('#searchWithdrawals').on('keyup', function () {
-        const searchValue = $(this).val().toLowerCase();
-        const filteredSuppliers = withdrawals.filter(delivery =>
-            delivery.item_name.toLowerCase().includes(searchValue) ||
-            delivery.date_receive.toLowerCase().includes(searchValue) ||
-            delivery.transaction_type.toLowerCase().includes(searchValue)
-        );
-        renderSuppliers(filteredSuppliers);
+    $('#searchWithdrawal, #dateFrom, #dateTo').on('input change', function () {
+        applyFilters();
     });
 
     $('#ds , #ns ').on('input', calculate);
 
 });
+
+function applyFilters() {
+    const searchValue = $('#searchWithdrawal').val().toLowerCase();
+    const dateFrom = $('#dateFrom').val();
+    const dateTo = $('#dateTo').val();
+
+    const filteredWithdrawals = withdrawals.filter(withdrawal => {
+        // TEXT SEARCH
+        const matchesText =
+            withdrawal.item_name.toLowerCase().includes(searchValue) ||
+            withdrawal.date_withdrawal.toLowerCase().includes(searchValue);
+
+        // DATE FILTERING  
+        let matchesDate = true;
+        const rowDate = new Date(withdrawal.date_withdrawal);
+
+        if (dateFrom && rowDate < new Date(dateFrom)) matchesDate = false;
+        if (dateTo && rowDate > new Date(dateTo)) matchesDate = false;
+
+        // MUST MATCH BOTH
+        return matchesText && matchesDate;
+    });
+
+    renderSuppliers(filteredWithdrawals);
+}
 
 function clearForm() {
     $('#supplierId').val('');
@@ -164,8 +183,8 @@ function updateSupplier(supplierData) {
         contentType: 'application/json',
         success: function () {
             $('#addWithdrawalModal').modal('hide');
-            fetchWithdrawals();
             alert("Withdrawal updated successfully:");
+            fetchWithdrawals();
         },
         error: function (xhr, status, error) {
             console.error('Error updating supplier:', error);
@@ -175,26 +194,136 @@ function updateSupplier(supplierData) {
 
 function editDelivery(id) {
     console.log(id);
-    const delivery = deliveries.find(delivery => delivery.delivery_id == id);
-    $('#supplierId').val(delivery.delivery_id);
+    const delivery = withdrawals.find(delivery => delivery.withdrawal_id == id);
+    $('#supplierId').val(delivery.withdrawal_id);
+    $('#dateWithdrawal').val(delivery.date_withdrawal);
     $('#itemDesc').val(delivery.item_description);
-    $('#dateReceive').val(delivery.date_receive);
-    $('#transactionType').val(delivery.transaction_type);
-    $('#weightScale').val(delivery.weight_scale);
-    $('#dynamicsQty').val(delivery.dynamics_qty);
-    $('#truckScaleVsDynamics').val(delivery.truckscale_vs_dynamics);
-    $('#fiveTonner').val(delivery.five_tonner);
-    $('#numBag').val(delivery.num_bag);
-    $('#tonnerTruck').val(delivery.tonner_vs_truck);
-    $('#tordNo').val(delivery.tord_no);
-    $('#atwNo').val(delivery.atw_no);
-    $('#palletQty').val(delivery.pallet_qty);
-    $('#supplier').val(delivery.supplier);
-    $('#plateNo').val(delivery.plate_no);
-    $('#weighSlip').val(delivery.weigh_slip);
-    $('#status').val(delivery.status);
-    $('#truckingService').val(delivery.trucking_service);
+    $('#ds').val(delivery.ds);
+    $('#ns').val(delivery.ns);
+    $('#totalQty').val(delivery.total_qty);
     $('#remarks').val(delivery.remarks);
-    //$('#supplierModalLabel').text('Edit Supplier');
-    $('#addReceivingModal').modal('show');
+    $('#addWithdrawalModal').modal('show');
 }
+
+function exportExcel() {
+    // Make sure you're using xlsx.full.min.js (full build)
+    // <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    // 1) Clone the table so we can remove columns safely without affecting page
+    const origTable = document.querySelector("table");
+    const clone = origTable.cloneNode(true);
+
+    // Remove ID column (first column) and Action column (last column) from clone
+    // Adjust indices if ID/Action are in different positions
+    const removeColIndices = [0]; // remove first column (ID)
+    const headerCols = clone.querySelectorAll("thead tr th");
+    if (headerCols.length > 1) {
+        removeColIndices.push(headerCols.length - 1); // remove last column (Action)
+    }
+
+    // Remove columns from every row in the clone (iterate descending to keep indexes valid)
+    removeColIndices.sort((a,b)=>b-a).forEach(colIndex => {
+        clone.querySelectorAll("tr").forEach(tr => {
+            const cell = tr.children[colIndex];
+            if (cell) tr.removeChild(cell);
+        });
+    });
+
+    // 2) Convert cloned table to worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(clone);
+
+    // 3) Apply header styles (first row)
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    const headerRow = range.s.r; // usually 0
+
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const addr = XLSX.utils.encode_cell({ r: headerRow, c: C });
+        if (!ws[addr]) continue;
+
+        // Use ARGB (prefix FF) and patternType solid
+        ws[addr].s = {
+            font: { name: "Calibri", sz: 11, bold: true, color: { rgb: "FFFFFFFF" } }, // white text
+            fill: { patternType: "solid", fgColor: { rgb: "FF1D3557" } }, // dark blue with FF prefix
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        };
+    }
+
+    // 4) Auto-fit column widths (based on content length)
+    const colWidths = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        let maxLength = 8; // minimal width
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            const cellAddr = XLSX.utils.encode_cell({ r: R, c: C });
+            const cell = ws[cellAddr];
+            if (cell && cell.v != null) {
+                const val = cell.v.toString();
+                // approximate width: count of characters (you can tune multiplier)
+                const len = val.length;
+                if (len > maxLength) maxLength = len;
+            }
+        }
+        colWidths.push({ wch: maxLength + 2 });
+    }
+    ws['!cols'] = colWidths;
+
+    // 5) Append sheet and write workbook with cellStyles true
+    XLSX.utils.book_append_sheet(wb, ws, "Withdrawals");
+    // Important: pass cellStyles: true so style objects are preserved
+    XLSX.writeFile(wb, "withdrawal_list.xlsx", { bookType: "xlsx", cellStyles: true });
+}
+
+
+
+
+async function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    doc.setFontSize(14);
+    doc.text("Withdrawals", 14, 10);
+
+    const rows = [];
+    $("#withdrawalTable tr").each(function () {
+        const row = [];
+        $(this).find("td").each(function (index) {
+
+            // keep columns 1–17 (excluding ID, trucking, remarks)
+            if (index > 0 && index <= 7) {
+                row.push($(this).text().trim());
+            }
+        });
+
+        if (row.length > 0) rows.push(row);
+    });
+
+    const headers = [
+        "Item Code", "Item Description", "D/S", "N/S",
+        "Total Qty", "Remarks"
+    ];
+
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 15,
+        theme: 'grid',
+        tableWidth: 'auto',
+        styles: {
+            fontSize: 12,
+            cellPadding: 1,
+            cellWidth: 'auto',
+            overflow: 'linebreak'
+        },
+        headStyles: {
+            fillColor: [29, 53, 87],
+            textColor: 255,
+            halign: "center"
+        },
+        bodyStyles: {
+            textColor: [0, 0, 0] // make table data black
+        }
+    });
+
+    doc.save("withdrawal.pdf");
+}
+

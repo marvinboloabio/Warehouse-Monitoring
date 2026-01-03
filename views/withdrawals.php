@@ -46,26 +46,47 @@
 
 <body>
 
-    <?php include 'sidebar.php'; ?> <!-- Sidebar -->
+    <?php include '../views/sidebar.php'; ?> <!-- Sidebar -->
 
     <div class="content">
 
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-file-alt mr-2"></i> Withdrawals List</span>
-                <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addWithdrawalModal" onclick="clearForm()">
-                    <i class="fas fa-plus"></i> Add Withdrawal
-                </button>
+                <div>
+                    <button class="btn btn-success btn-sm mr-2" onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+
+                    <button class="btn btn-danger btn-sm mr-2" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-add btn-sm" data-toggle="modal" data-target="#addWithdrawalModal" onclick="clearForm()">
+                        <i class="fas fa-plus"></i> Add Withdrawal
+                    </button>
+                </div>
             </div>
 
             <div class="card-body">
-
-                <!-- Search Bar -->
                 <div class="row mb-3">
-                    <div class="col-md-6">
+
+                    <div class="col-md-3">
+                        <label>Date From</label>
+                        <input type="date" id="dateFrom" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Date To</label>
+                        <input type="date" id="dateTo" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Search Withdrawal</label>
                         <input type="text" id="searchWithdrawal" class="form-control" placeholder="Search withdrawal...">
                     </div>
+
                 </div>
+
 
                 <!-- WITHDRAWALS TABLE -->
                 <div class="table-responsive">
@@ -106,7 +127,7 @@
 
                 <div class="modal-body">
                     <form id="addWithdrawalForm">
-                        <input type="hidden" id="supplierId">
+                        <input type="text" id="supplierId">
                         <div class="form-group">
                             <label>Date</label>
                             <input type="date" class="form-control" required id="dateWithdrawal">
@@ -122,22 +143,22 @@
                         <div class="form-row">
                             <div class="form-group col-md-6">
                                 <label>D/S</label>
-                                <input type="number" class="form-control" required id = "ds">
+                                <input type="number" class="form-control" required id="ds">
                             </div>
                             <div class="form-group col-md-6">
                                 <label>N/S</label>
-                                <input type="number" class="form-control" required id = "ns">
+                                <input type="number" class="form-control" required id="ns">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Total Qty</label>
-                            <input type="number" class="form-control" required readonly id = "totalQty">
+                            <input type="number" class="form-control" required readonly id="totalQty">
                         </div>
 
                         <div class="form-group">
                             <label>Remarks</label>
-                            <textarea class="form-control" rows="2" id ="remarks"></textarea>
+                            <textarea class="form-control" rows="2" id="remarks"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block" onclick="saveWithdrawal()">Save Withdrawal</button>
                     </form>
@@ -148,6 +169,14 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- XLSX / SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+    <!-- jsPDF AutoTable -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
     <script src="../assets/js/withdrawals.js"></script>
 </body>
 
